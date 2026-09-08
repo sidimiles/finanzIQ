@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "FinanzIQ",
+    "slug": "finanziq",
+    "owner": "trachsel-ki",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0F14"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ch.trachselki.finanziq"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B0F14"
+      },
+      "package": "ch.trachselki.finanziq"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": ["expo-router"],
+    "scheme": "finanziq",
+    "extra": {
+      "eas": {
+        "projectId": "PASTE_YOUR_PROJECT_ID_HERE"
+      }
+    }
+  }
+}

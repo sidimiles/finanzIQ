@@ -1,0 +1,9 @@
+Nach "npx create-expo-app finanziq" folgende Pakete installieren:
+
+npx expo install @supabase/supabase-js @react-native-async-storage/async-storage react-native-url-polyfill
+npx expo install expo-router expo-constants expo-linking expo-status-bar react-native-safe-area-context react-native-screens
+npx expo install @expo/vector-icons
+
+Falls expo-router noch nicht als Template gewählt wurde:
+npx expo install expo-router
+# und "main": "expo-router/entry" in package.json setzen
