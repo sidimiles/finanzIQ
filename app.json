@@ -32,7 +32,7 @@
     "scheme": "finanziq",
     "extra": {
       "eas": {
-        "projectId": "PASTE_YOUR_PROJECT_ID_HERE"
+        "projectId": "finanziq"
       }
     }
   }
