@@ -2,8 +2,10 @@ import { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, RefreshControl, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../../lib/supabase';
-import { useTheme } from '../../lib/theme';
+import { useTheme, cardShadow, radius, spacing } from '../../lib/theme';
+import { accountTypeIcon } from '../../lib/icons';
 import { Account } from '../../types/database';
 
 export default function Accounts() {
@@ -44,42 +46,38 @@ export default function Accounts() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={[styles.header, { color: colors.textMuted }]}>Konten</Text>
-          <Text style={[styles.total, { color: colors.text }]}>
-            {totalBalance.toLocaleString('de-CH', { style: 'currency', currency: 'CHF' })}
-          </Text>
-        </View>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => router.push('/(modals)/transactions')}
-          >
-            <Ionicons name="list-outline" size={20} color={colors.text} />
+      <LinearGradient
+        colors={[colors.gradientFrom, colors.gradientTo]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.hero, cardShadow, { shadowColor: colors.gradientTo }]}
+      >
+        <Text style={styles.heroLabel}>Gesamtvermögen</Text>
+        <Text style={styles.heroValue}>
+          {totalBalance.toLocaleString('de-CH', { style: 'currency', currency: 'CHF' })}
+        </Text>
+        <View style={styles.heroActions}>
+          <TouchableOpacity style={styles.heroButton} onPress={() => router.push('/(modals)/transactions')}>
+            <Ionicons name="list-outline" size={18} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => router.push('/(modals)/add-transfer')}
-          >
-            <Ionicons name="swap-horizontal-outline" size={20} color={colors.text} />
+          <TouchableOpacity style={styles.heroButton} onPress={() => router.push('/(modals)/add-transfer')}>
+            <Ionicons name="swap-horizontal-outline" size={18} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: colors.card, borderColor: colors.border }]}
-            onPress={() => router.push('/(modals)/add-account')}
-          >
-            <Ionicons name="wallet-outline" size={20} color={colors.text} />
+          <TouchableOpacity style={styles.heroButton} onPress={() => router.push('/(modals)/add-account')}>
+            <Ionicons name="wallet-outline" size={18} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.accent }]} onPress={() => router.push('/(modals)/add-transaction')}>
-            <Ionicons name="add" size={22} color="#fff" />
+          <TouchableOpacity style={[styles.heroButton, styles.heroButtonPrimary]} onPress={() => router.push('/(modals)/add-transaction')}>
+            <Ionicons name="add" size={20} color={colors.gradientTo} />
           </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
+
+      <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>Deine Konten</Text>
 
       <FlatList
         data={accounts}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingTop: 16 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -91,14 +89,21 @@ export default function Accounts() {
           />
         }
         ListEmptyComponent={
-          <Text style={[styles.empty, { color: colors.textMuted }]}>Noch keine Konten. Tippe oben auf das Wallet-Symbol, um eines anzulegen.</Text>
+          <View style={styles.emptyState}>
+            <Ionicons name="wallet-outline" size={32} color={colors.textMuted} />
+            <Text style={[styles.empty, { color: colors.textMuted }]}>Noch keine Konten.{'\n'}Tippe oben auf das Wallet-Symbol.</Text>
+          </View>
         }
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[styles.card, { backgroundColor: colors.card }]}
+            style={[styles.card, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow }]}
             onLongPress={() => confirmDelete(item)}
+            activeOpacity={0.8}
           >
-            <View>
+            <View style={[styles.avatar, { backgroundColor: colors.accentSoft }]}>
+              <Ionicons name={accountTypeIcon(item.type)} size={20} color={colors.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
               <Text style={[styles.cardTitle, { color: colors.text }]}>{item.name}</Text>
               <Text style={[styles.cardType, { color: colors.textMuted }]}>{item.type}</Text>
             </View>
@@ -113,15 +118,33 @@ export default function Accounts() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 60 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  header: { fontSize: 14, fontWeight: '600' },
-  total: { fontSize: 32, fontWeight: '700', marginTop: 4 },
-  headerButtons: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: 170 },
-  iconButton: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  empty: { textAlign: 'center', marginTop: 40 },
-  card: { borderRadius: 14, padding: 16, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  container: { flex: 1, paddingHorizontal: spacing.md, paddingTop: 56 },
+  hero: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.lg },
+  heroLabel: { color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: '600', letterSpacing: 0.2 },
+  heroValue: { color: '#fff', fontSize: 38, fontWeight: '800', marginTop: 6, letterSpacing: -0.5 },
+  heroActions: { flexDirection: 'row', gap: 10, marginTop: 20 },
+  heroButton: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroButtonPrimary: { backgroundColor: '#fff' },
+  sectionLabel: { fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 10 },
+  emptyState: { alignItems: 'center', marginTop: 40, gap: 10 },
+  empty: { textAlign: 'center', lineHeight: 20 },
+  card: {
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: { width: 42, height: 42, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   cardTitle: { fontSize: 16, fontWeight: '600' },
   cardType: { fontSize: 13, marginTop: 2, textTransform: 'capitalize' },
-  cardBalance: { fontSize: 16, fontWeight: '600' },
+  cardBalance: { fontSize: 16, fontWeight: '700' },
 });

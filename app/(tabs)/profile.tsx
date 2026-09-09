@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { supabase } from '../../lib/supabase';
-import { useTheme } from '../../lib/theme';
+import { useTheme, cardShadow, radius, spacing } from '../../lib/theme';
 import { exportFullBackupJSON } from '../../lib/export';
 
 const BIOMETRIC_KEY = 'finanziq_biometric_enabled';
@@ -94,15 +94,22 @@ export default function Profile() {
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.bg }]} contentContainerStyle={{ padding: 20, paddingTop: 60 }}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.bg }]} contentContainerStyle={{ padding: spacing.md, paddingTop: 56 }}>
       <Text style={[styles.header, { color: colors.text }]}>Profil</Text>
 
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.label, { color: colors.textMuted }]}>Angemeldet als</Text>
-        <Text style={[styles.email, { color: colors.text }]}>{email}</Text>
+      <View style={[styles.card, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+        <View style={styles.profileRow}>
+          <View style={[styles.avatar, { backgroundColor: colors.accentSoft }]}>
+            <Ionicons name="person" size={20} color={colors.accent} />
+          </View>
+          <View>
+            <Text style={[styles.label, { color: colors.textMuted }]}>Angemeldet als</Text>
+            <Text style={[styles.email, { color: colors.text }]}>{email}</Text>
+          </View>
+        </View>
       </View>
 
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={[styles.card, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
         <View style={styles.row}>
           <Text style={[styles.rowLabel, { color: colors.text }]}>Dunkles Design</Text>
           <Switch value={mode === 'dark'} onValueChange={toggle} trackColor={{ true: colors.accent }} />
@@ -116,28 +123,39 @@ export default function Profile() {
         )}
       </View>
 
-      <TouchableOpacity style={[styles.actionRow, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => router.push('/(modals)/categories')}>
-        <Ionicons name="pricetags-outline" size={20} color={colors.text} />
+      <TouchableOpacity style={[styles.actionRow, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow }]} onPress={() => router.push('/(modals)/categories')}>
+        <View style={[styles.actionIcon, { backgroundColor: colors.accentSoft }]}>
+          <Ionicons name="pricetags-outline" size={18} color={colors.accent} />
+        </View>
         <Text style={[styles.actionText, { color: colors.text }]}>Kategorien verwalten</Text>
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.actionRow, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={handleBackupExport} disabled={exportingBackup}>
-        <Ionicons name="download-outline" size={20} color={colors.text} />
+      <TouchableOpacity style={[styles.actionRow, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow }]} onPress={handleBackupExport} disabled={exportingBackup}>
+        <View style={[styles.actionIcon, { backgroundColor: colors.accentSoft }]}>
+          <Ionicons name="download-outline" size={18} color={colors.accent} />
+        </View>
         <Text style={[styles.actionText, { color: colors.text }]}>{exportingBackup ? 'Exportiere...' : 'Daten-Backup exportieren'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.actionRow, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={handleResetPassword}>
-        <Ionicons name="key-outline" size={20} color={colors.text} />
+      <TouchableOpacity style={[styles.actionRow, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow }]} onPress={handleResetPassword}>
+        <View style={[styles.actionIcon, { backgroundColor: colors.accentSoft }]}>
+          <Ionicons name="key-outline" size={18} color={colors.accent} />
+        </View>
         <Text style={[styles.actionText, { color: colors.text }]}>Passwort zurücksetzen</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.actionRow, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={handleSignOut}>
-        <Ionicons name="log-out-outline" size={20} color={colors.text} />
+      <TouchableOpacity style={[styles.actionRow, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow }]} onPress={handleSignOut}>
+        <View style={[styles.actionIcon, { backgroundColor: colors.accentSoft }]}>
+          <Ionicons name="log-out-outline" size={18} color={colors.accent} />
+        </View>
         <Text style={[styles.actionText, { color: colors.text }]}>Abmelden</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={[styles.actionRow, styles.dangerRow]} onPress={handleDeleteAccount}>
-        <Ionicons name="trash-outline" size={20} color={colors.expense} />
+        <View style={[styles.actionIcon, { backgroundColor: 'rgba(255,107,107,0.14)' }]}>
+          <Ionicons name="trash-outline" size={18} color={colors.expense} />
+        </View>
         <Text style={[styles.actionText, { color: colors.expense }]}>Konto löschen</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -146,9 +164,11 @@ export default function Profile() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { fontSize: 24, fontWeight: '700', marginBottom: 20 },
-  card: { borderRadius: 14, padding: 16, marginBottom: 16, borderWidth: 1 },
-  label: { fontSize: 13, marginBottom: 4 },
+  header: { fontSize: 26, fontWeight: '800', letterSpacing: -0.4, marginBottom: 20 },
+  card: { borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md },
+  profileRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatar: { width: 42, height: 42, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  label: { fontSize: 13, marginBottom: 2 },
   email: { fontSize: 16, fontWeight: '600' },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 },
   rowBorder: { borderTopWidth: 1, marginTop: 8, paddingTop: 16 },
@@ -157,11 +177,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: 10,
   },
-  dangerRow: { backgroundColor: 'rgba(255,107,107,0.08)', borderColor: 'rgba(255,107,107,0.3)' },
-  actionText: { fontSize: 16, fontWeight: '600' },
+  actionIcon: { width: 34, height: 34, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },
+  dangerRow: { backgroundColor: 'rgba(255,107,107,0.08)' },
+  actionText: { flex: 1, fontSize: 16, fontWeight: '600' },
 });

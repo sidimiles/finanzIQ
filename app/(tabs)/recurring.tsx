@@ -3,7 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react
 import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
-import { useTheme } from '../../lib/theme';
+import { useTheme, cardShadow, radius, spacing } from '../../lib/theme';
 import { RecurringPayment } from '../../types/database';
 
 type RP = RecurringPayment & { type: 'expense' | 'income' };
@@ -76,10 +76,10 @@ export default function Recurring() {
         <View>
           <Text style={[styles.header, { color: colors.text }]}>Wiederkehrend</Text>
           <Text style={[styles.subheader, { color: colors.textMuted }]}>
-            ~{monthlyExpense.toFixed(0)} CHF Ausgaben · ~{monthlyIncome.toFixed(0)} CHF Einnahmen / Monat
+            ~{monthlyExpense.toFixed(0)} Ausgaben · ~{monthlyIncome.toFixed(0)} Einnahmen / Monat
           </Text>
         </View>
-        <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.accent }]} onPress={() => router.push('/(modals)/add-recurring')}>
+        <TouchableOpacity style={[styles.iconButton, cardShadow, { backgroundColor: colors.accent, shadowColor: colors.accent }]} onPress={() => router.push('/(modals)/add-recurring')}>
           <Ionicons name="add" size={22} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -87,17 +87,26 @@ export default function Recurring() {
       <FlatList
         data={payments}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingTop: 16 }}
-        ListEmptyComponent={<Text style={[styles.empty, { color: colors.textMuted }]}>Keine wiederkehrenden Zahlungen. Tippe oben auf +.</Text>}
+        contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: 20 }}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Ionicons name="repeat-outline" size={32} color={colors.textMuted} />
+            <Text style={[styles.empty, { color: colors.textMuted }]}>Keine wiederkehrenden Zahlungen.{'\n'}Tippe oben auf +.</Text>
+          </View>
+        }
         renderItem={({ item }) => {
           const days = daysUntil(item.next_due_date);
           const soon = days <= 3;
           return (
             <TouchableOpacity
-              style={[styles.card, { backgroundColor: colors.card }]}
+              style={[styles.card, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow }]}
               onLongPress={() => confirmDelete(item)}
+              activeOpacity={0.85}
             >
-              <View>
+              <View style={[styles.avatar, { backgroundColor: item.type === 'income' ? 'rgba(61,220,132,0.14)' : colors.accentSoft }]}>
+                <Ionicons name={item.type === 'income' ? 'arrow-down-outline' : 'repeat-outline'} size={18} color={item.type === 'income' ? colors.income : colors.accent} />
+              </View>
+              <View style={{ flex: 1 }}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>{item.name}</Text>
                 <Text style={[styles.cardSub, { color: colors.textMuted }]}>
                   {frequencyLabel[item.frequency]} · {item.next_due_date}
@@ -106,7 +115,7 @@ export default function Recurring() {
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={[styles.cardAmount, { color: item.type === 'income' ? colors.income : colors.text }]}>
                   {item.type === 'income' ? '+' : ''}
-                  {Math.abs(Number(item.amount)).toFixed(0)} CHF
+                  {Math.abs(Number(item.amount)).toFixed(0)}
                 </Text>
                 {soon && (
                   <Text style={[styles.badge, { color: colors.expense }]}>
@@ -123,15 +132,17 @@ export default function Recurring() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 60 },
+  container: { flex: 1, paddingHorizontal: spacing.md, paddingTop: 56 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  header: { fontSize: 24, fontWeight: '700' },
-  subheader: { fontSize: 14, marginTop: 4 },
-  iconButton: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  empty: { textAlign: 'center', marginTop: 40 },
-  card: { borderRadius: 14, padding: 16, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: { fontSize: 26, fontWeight: '800', letterSpacing: -0.4 },
+  subheader: { fontSize: 13, marginTop: 4, maxWidth: 220 },
+  iconButton: { width: 42, height: 42, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  emptyState: { alignItems: 'center', marginTop: 40, gap: 10 },
+  empty: { textAlign: 'center', lineHeight: 20 },
+  card: { borderRadius: radius.lg, padding: spacing.md, marginBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatar: { width: 40, height: 40, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
   cardTitle: { fontSize: 16, fontWeight: '600' },
   cardSub: { fontSize: 13, marginTop: 2 },
-  cardAmount: { fontSize: 16, fontWeight: '600' },
+  cardAmount: { fontSize: 16, fontWeight: '700' },
   badge: { fontSize: 11, fontWeight: '700', marginTop: 2 },
 });

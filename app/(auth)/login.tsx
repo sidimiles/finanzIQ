@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } 
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
-import { useTheme } from '../../lib/theme';
+import { useTheme, cardShadow, radius, spacing } from '../../lib/theme';
 import { signInWithApple, useGoogleAuth } from '../../lib/oauth';
 
 export default function Login() {
@@ -46,6 +46,9 @@ export default function Login() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
+      <View style={[styles.logoBadge, cardShadow, { backgroundColor: colors.accent, shadowColor: colors.accent }]}>
+        <Text style={styles.logoText}>F</Text>
+      </View>
       <Text style={[styles.title, { color: colors.text }]}>FinanzIQ</Text>
       <Text style={[styles.subtitle, { color: colors.textMuted }]}>{isSignUp ? 'Konto erstellen' : 'Willkommen zurück'}</Text>
 
@@ -67,7 +70,7 @@ export default function Login() {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={[styles.button, { backgroundColor: colors.accent }]} onPress={handleSubmit} disabled={loading}>
+      <TouchableOpacity style={[styles.button, cardShadow, { backgroundColor: colors.accent, shadowColor: colors.accent }]} onPress={handleSubmit} disabled={loading}>
         <Text style={styles.buttonText}>{loading ? '...' : isSignUp ? 'Registrieren' : 'Anmelden'}</Text>
       </TouchableOpacity>
 
@@ -102,15 +105,17 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 32, fontWeight: '700', marginBottom: 4 },
+  container: { flex: 1, justifyContent: 'center', padding: spacing.lg },
+  logoBadge: { width: 56, height: 56, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  logoText: { color: '#fff', fontSize: 26, fontWeight: '800' },
+  title: { fontSize: 32, fontWeight: '800', marginBottom: 4, letterSpacing: -0.5 },
   subtitle: { fontSize: 16, marginBottom: 32 },
-  input: { borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1 },
-  button: { borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 8 },
-  buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  input: { borderRadius: radius.md, padding: 16, marginBottom: 12, borderWidth: 1 },
+  button: { borderRadius: radius.md, padding: 16, alignItems: 'center', marginTop: 8 },
+  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   switchText: { textAlign: 'center', marginTop: 20 },
   divider: { height: 1, marginVertical: 28 },
   appleButton: { height: 50, marginBottom: 12 },
-  oauthButton: { flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center', borderRadius: 12, padding: 14, borderWidth: 1 },
+  oauthButton: { flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center', borderRadius: radius.md, padding: 14, borderWidth: 1 },
   oauthText: { fontWeight: '600', fontSize: 15 },
 });

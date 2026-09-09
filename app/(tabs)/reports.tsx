@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
-import { useTheme } from '../../lib/theme';
+import { useTheme, cardShadow, radius, spacing } from '../../lib/theme';
 
 type CategorySummary = { category_name: string; total: number; color: string | null };
 
@@ -109,18 +109,18 @@ export default function Reports() {
       </Text>
 
       <View style={styles.summaryRow}>
-        <View style={[styles.summaryCard, { backgroundColor: colors.card, marginRight: 8 }]}>
+        <View style={[styles.summaryCard, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow, marginRight: 10 }]}>
           <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Einnahmen</Text>
           <Text style={[styles.summaryValue, { color: colors.income }]}>+{income.toFixed(0)}</Text>
         </View>
-        <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.summaryCard, cardShadow, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
           <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Ausgaben</Text>
           <Text style={[styles.summaryValue, { color: colors.expense }]}>-{expenses.toFixed(0)}</Text>
         </View>
       </View>
 
       {prevExpenses > 0 && (
-        <View style={[styles.compareCard, { backgroundColor: colors.card }]}>
+        <View style={[styles.compareCard, { backgroundColor: colors.cardAlt }]}>
           <Text style={[styles.compareText, { color: colors.textMuted }]}>
             {compareLabel}:{' '}
             <Text style={{ color: diff >= 0 ? colors.expense : colors.income, fontWeight: '700' }}>
@@ -140,10 +140,13 @@ export default function Reports() {
         renderItem={({ item }) => (
           <View style={styles.catRow}>
             <View style={styles.catHeaderRow}>
-              <Text style={[styles.catName, { color: colors.text }]}>{item.category_name}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <View style={[styles.dot, { backgroundColor: item.color || colors.accent }]} />
+                <Text style={[styles.catName, { color: colors.text }]}>{item.category_name}</Text>
+              </View>
               <Text style={[styles.catAmount, { color: colors.textMuted }]}>{item.total.toFixed(0)} CHF</Text>
             </View>
-            <View style={[styles.barTrack, { backgroundColor: colors.border }]}>
+            <View style={[styles.barTrack, { backgroundColor: colors.cardAlt }]}>
               <View
                 style={[
                   styles.barFill,
@@ -159,25 +162,26 @@ export default function Reports() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 60 },
+  container: { flex: 1, paddingHorizontal: spacing.md, paddingTop: 56 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  header: { fontSize: 24, fontWeight: '700' },
-  toggle: { flexDirection: 'row', borderRadius: 10, borderWidth: 1, padding: 2 },
-  toggleOption: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: 8 },
+  header: { fontSize: 26, fontWeight: '800', letterSpacing: -0.4 },
+  toggle: { flexDirection: 'row', borderRadius: radius.sm, borderWidth: 1, padding: 3 },
+  toggleOption: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: radius.sm - 3 },
   toggleText: { fontSize: 13, fontWeight: '600' },
   subheader: { fontSize: 14, marginTop: 4, marginBottom: 20 },
   summaryRow: { flexDirection: 'row', marginBottom: 12 },
-  summaryCard: { flex: 1, borderRadius: 14, padding: 16 },
+  summaryCard: { flex: 1, borderRadius: radius.lg, padding: spacing.md },
   summaryLabel: { fontSize: 13 },
-  summaryValue: { fontSize: 22, fontWeight: '700', marginTop: 6 },
-  compareCard: { borderRadius: 12, padding: 12, marginBottom: 20 },
+  summaryValue: { fontSize: 24, fontWeight: '800', marginTop: 6, letterSpacing: -0.3 },
+  compareCard: { borderRadius: radius.md, padding: 12, marginBottom: 20 },
   compareText: { fontSize: 13 },
-  sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 10 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 10 },
   empty: { textAlign: 'center', marginTop: 20 },
   catRow: { paddingVertical: 10 },
-  catHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  catHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
   catName: { fontSize: 15 },
-  catAmount: { fontSize: 15 },
+  catAmount: { fontSize: 15, fontWeight: '600' },
   barTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
   barFill: { height: 8, borderRadius: 4 },
 });
