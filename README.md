@@ -54,7 +54,29 @@ Danach sag mir Bescheid — dann kann ich über die Expo-MCP-Verbindung
 Preview-Builds für Android/iOS auslösen, genau wie bei KinetiQ.
 
 ## Nächste Schritte für Feature-Parität
-- ✅ Formulare zum Hinzufügen von Konten/Transaktionen/Budgets/wiederkehrenden Zahlungen (fertig)
-- Bearbeiten/Löschen-Funktion für bestehende Einträge
-- Push-Benachrichtigungen für fällige wiederkehrende Zahlungen
-- Onboarding-Flow für neue User
+- ✅ Formulare zum Hinzufügen von Konten/Transaktionen/Budgets/wiederkehrenden Zahlungen
+- ✅ Profil-Tab (Konto-Infos, Abmelden, Konto löschen, Passwort zurücksetzen)
+- ✅ Hell/Dunkel-Modus
+- ✅ Transaktionsliste (ansehen + löschen)
+- ✅ Löschen für Konten/Budgets/Wiederkehrend (lange drücken)
+- ✅ Kontoübertrag zwischen eigenen Konten
+- ✅ Diagramme + Monatsvergleich in Berichten
+- ✅ Biometrische Sperre (Face ID/Fingerabdruck)
+- ✅ Sparziele-Tab
+- ✅ Belegfoto zu Buchung (Storage-Bucket ist bereits live eingerichtet)
+- ⚠️ Google/Apple-Login — **Code ist fertig, aber funktioniert erst nach diesem Setup:**
+
+### Apple Sign-In aktivieren
+1. Im Apple Developer Portal (developer.apple.com) unter deiner App-ID die Capability "Sign in with Apple" aktivieren (braucht das $99/Jahr Apple Developer Account, gleiche Baustelle wie bei KinetiQ's iOS-Build)
+2. In Supabase Dashboard → Authentication → Providers → Apple aktivieren
+
+### Google Sign-In aktivieren
+1. Auf console.cloud.google.com ein OAuth-Client erstellen (3 Stück: Web, iOS, Android) für `ch.trachselki.finanziq`
+2. Die 3 Client-IDs in `app.json` unter `extra.googleWebClientId` / `googleIosClientId` / `googleAndroidClientId` eintragen (Platzhalter sind schon drin)
+3. In Supabase Dashboard → Authentication → Providers → Google aktivieren, dort die Web-Client-ID + Secret eintragen
+
+Bis dahin funktionieren E-Mail/Passwort-Login normal, die Google/Apple-Buttons erscheinen aber Fehler beim Antippen.
+
+- ⏳ Echte Push-Benachrichtigungen (aktuell nur visuelle Warnungen/Badges in der App)
+
+**Hinweis:** `app.json` hat bereits deine echte `projectId` eingetragen — nichts mehr nachzutragen.

@@ -1,13 +1,16 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../lib/theme';
 
 export default function TabsLayout() {
+  const { colors } = useTheme();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#4F8CFF',
-        tabBarStyle: { backgroundColor: '#0B0F14', borderTopColor: '#232B36' },
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarStyle: { backgroundColor: colors.bg, borderTopColor: colors.border },
       }}
     >
       <Tabs.Screen
@@ -36,6 +39,20 @@ export default function TabsLayout() {
         options={{
           title: 'Wiederkehrend',
           tabBarIcon: ({ color, size }) => <Ionicons name="repeat-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="goals"
+        options={{
+          title: 'Sparziele',
+          tabBarIcon: ({ color, size }) => <Ionicons name="flag-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profil',
+          tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
         }}
       />
     </Tabs>

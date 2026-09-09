@@ -35,8 +35,22 @@ export type Transaction = {
   is_recurring: boolean;
   recurring_id: string | null;
   notes: string | null;
+  receipt_url: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type Goal = {
+  id: string;
+  user_id: string;
+  name: string;
+  target_amount: number;
+  current_amount: number;
+  target_date: string | null;
+  color: string | null;
+  icon: string | null;
+  is_completed: boolean;
+  created_at: string;
 };
 
 export type RecurringPayment = {

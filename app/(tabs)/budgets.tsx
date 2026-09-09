@@ -1,13 +1,15 @@
 import { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { useTheme } from '../../lib/theme';
 import { Budget, Category } from '../../types/database';
 
 type BudgetWithSpent = Budget & { category: Category | null; spent: number };
 
 export default function Budgets() {
+  const { colors } = useTheme();
   const [budgets, setBudgets] = useState<BudgetWithSpent[]>([]);
 
   const load = useCallback(async () => {
@@ -43,14 +45,28 @@ export default function Budgets() {
     }, [load])
   );
 
+  function confirmDelete(budget: BudgetWithSpent) {
+    Alert.alert('Budget löschen?', `Budget für "${budget.category?.name}" entfernen?`, [
+      { text: 'Abbrechen', style: 'cancel' },
+      {
+        text: 'Löschen',
+        style: 'destructive',
+        onPress: async () => {
+          await supabase.from('budgets').delete().eq('id', budget.id);
+          load();
+        },
+      },
+    ]);
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.bg }]}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.header}>Budgets</Text>
-          <Text style={styles.subheader}>Dieser Monat</Text>
+          <Text style={[styles.header, { color: colors.text }]}>Budgets</Text>
+          <Text style={[styles.subheader, { color: colors.textMuted }]}>Dieser Monat · lange drücken zum Löschen</Text>
         </View>
-        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(modals)/add-budget')}>
+        <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.accent }]} onPress={() => router.push('/(modals)/add-budget')}>
           <Ionicons name="add" size={22} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -59,22 +75,28 @@ export default function Budgets() {
         data={budgets}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingTop: 16 }}
-        ListEmptyComponent={<Text style={styles.empty}>Noch keine Budgets. Tippe oben auf +.</Text>}
+        ListEmptyComponent={<Text style={[styles.empty, { color: colors.textMuted }]}>Noch keine Budgets. Tippe oben auf +.</Text>}
         renderItem={({ item }) => {
           const pct = Math.min(100, (item.spent / Number(item.amount_limit)) * 100);
           const over = item.spent > Number(item.amount_limit);
           return (
-            <View style={styles.card}>
+            <TouchableOpacity
+              style={[styles.card, { backgroundColor: colors.card }]}
+              onLongPress={() => confirmDelete(item)}
+            >
               <View style={styles.cardRow}>
-                <Text style={styles.cardTitle}>{item.category?.name ?? 'Kategorie'}</Text>
-                <Text style={[styles.cardAmount, over && styles.over]}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  {over && <Ionicons name="warning" size={14} color={colors.expense} />}
+                  <Text style={[styles.cardTitle, { color: colors.text }]}>{item.category?.name ?? 'Kategorie'}</Text>
+                </View>
+                <Text style={[styles.cardAmount, { color: colors.textMuted }, over && { color: colors.expense }]}>
                   {item.spent.toFixed(0)} / {Number(item.amount_limit).toFixed(0)} CHF
                 </Text>
               </View>
-              <View style={styles.progressTrack}>
-                <View style={[styles.progressFill, { width: `${pct}%` }, over && styles.progressOver]} />
+              <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+                <View style={[styles.progressFill, { width: `${pct}%`, backgroundColor: over ? colors.expense : colors.accent }]} />
               </View>
-            </View>
+            </TouchableOpacity>
           );
         }}
       />
@@ -83,25 +105,16 @@ export default function Budgets() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0B0F14', padding: 20, paddingTop: 60 },
+  container: { flex: 1, padding: 20, paddingTop: 60 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  header: { fontSize: 24, color: '#fff', fontWeight: '700' },
-  subheader: { fontSize: 14, color: '#8A93A3', marginTop: 4 },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#4F8CFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  empty: { color: '#8A93A3', textAlign: 'center', marginTop: 40 },
-  card: { backgroundColor: '#151B23', borderRadius: 14, padding: 16, marginBottom: 10 },
+  header: { fontSize: 24, fontWeight: '700' },
+  subheader: { fontSize: 13, marginTop: 4 },
+  iconButton: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  empty: { textAlign: 'center', marginTop: 40 },
+  card: { borderRadius: 14, padding: 16, marginBottom: 10 },
   cardRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  cardTitle: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  cardAmount: { color: '#8A93A3', fontSize: 14 },
-  over: { color: '#FF6B6B' },
-  progressTrack: { height: 8, backgroundColor: '#232B36', borderRadius: 4, overflow: 'hidden' },
-  progressFill: { height: 8, backgroundColor: '#4F8CFF', borderRadius: 4 },
-  progressOver: { backgroundColor: '#FF6B6B' },
+  cardTitle: { fontSize: 16, fontWeight: '600' },
+  cardAmount: { fontSize: 14 },
+  progressTrack: { height: 8, borderRadius: 4, overflow: 'hidden' },
+  progressFill: { height: 8, borderRadius: 4 },
 });
