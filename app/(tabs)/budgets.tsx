@@ -1,5 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { useState, useCallback } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { useFocusEffect, router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { Budget, Category } from '../../types/database';
 
@@ -35,20 +37,29 @@ export default function Budgets() {
     setBudgets(withSpent);
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Budgets</Text>
-      <Text style={styles.subheader}>Dieser Monat</Text>
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={styles.header}>Budgets</Text>
+          <Text style={styles.subheader}>Dieser Monat</Text>
+        </View>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/(modals)/add-budget')}>
+          <Ionicons name="add" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>
 
       <FlatList
         data={budgets}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingTop: 16 }}
-        ListEmptyComponent={<Text style={styles.empty}>Noch keine Budgets festgelegt.</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>Noch keine Budgets. Tippe oben auf +.</Text>}
         renderItem={({ item }) => {
           const pct = Math.min(100, (item.spent / Number(item.amount_limit)) * 100);
           const over = item.spent > Number(item.amount_limit);
@@ -61,9 +72,7 @@ export default function Budgets() {
                 </Text>
               </View>
               <View style={styles.progressTrack}>
-                <View
-                  style={[styles.progressFill, { width: `${pct}%` }, over && styles.progressOver]}
-                />
+                <View style={[styles.progressFill, { width: `${pct}%` }, over && styles.progressOver]} />
               </View>
             </View>
           );
@@ -75,8 +84,17 @@ export default function Budgets() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0B0F14', padding: 20, paddingTop: 60 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   header: { fontSize: 24, color: '#fff', fontWeight: '700' },
   subheader: { fontSize: 14, color: '#8A93A3', marginTop: 4 },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#4F8CFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   empty: { color: '#8A93A3', textAlign: 'center', marginTop: 40 },
   card: { backgroundColor: '#151B23', borderRadius: 14, padding: 16, marginBottom: 10 },
   cardRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },

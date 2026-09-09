@@ -54,6 +54,7 @@ Danach sag mir Bescheid — dann kann ich über die Expo-MCP-Verbindung
 Preview-Builds für Android/iOS auslösen, genau wie bei KinetiQ.
 
 ## Nächste Schritte für Feature-Parität
-- Formulare zum Hinzufügen von Konten/Transaktionen/Budgets/wiederkehrenden Zahlungen
-- Default-Kategorien beim Signup automatisch anlegen (optional: erweitere den `handle_new_user`-Trigger)
+- ✅ Formulare zum Hinzufügen von Konten/Transaktionen/Budgets/wiederkehrenden Zahlungen (fertig)
+- Bearbeiten/Löschen-Funktion für bestehende Einträge
 - Push-Benachrichtigungen für fällige wiederkehrende Zahlungen
+- Onboarding-Flow für neue User

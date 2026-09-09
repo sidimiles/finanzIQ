@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 
 type CategorySummary = { category_name: string; total: number };
@@ -44,9 +45,11 @@ export default function Reports() {
     );
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
 
   return (
     <View style={styles.container}>
