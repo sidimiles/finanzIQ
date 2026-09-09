@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
 import { ChipSelector } from '../../components/ChipSelector';
+import { suggestCategory } from '../../lib/categorize';
 import { Account, Category } from '../../types/database';
 
 const TYPE_OPTIONS = [
@@ -83,6 +84,15 @@ export default function AddTransaction() {
       return fileName;
     } finally {
       setUploadingReceipt(false);
+    }
+  }
+
+  function handleDescriptionChange(text: string) {
+    setDescription(text);
+    const suggestedName = suggestCategory(text);
+    if (suggestedName) {
+      const match = categories.find((c) => c.name === suggestedName);
+      if (match) setCategoryId(match.id);
     }
   }
 
@@ -168,7 +178,7 @@ export default function AddTransaction() {
         placeholder="z.B. Migros Einkauf"
         placeholderTextColor={colors.textMuted}
         value={description}
-        onChangeText={setDescription}
+        onChangeText={handleDescriptionChange}
       />
 
       <Text style={[styles.label, { color: colors.textMuted }]}>Datum (JJJJ-MM-TT)</Text>

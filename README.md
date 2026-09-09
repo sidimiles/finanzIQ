@@ -64,6 +64,14 @@ Preview-Builds für Android/iOS auslösen, genau wie bei KinetiQ.
 - ✅ Biometrische Sperre (Face ID/Fingerabdruck)
 - ✅ Sparziele-Tab
 - ✅ Belegfoto zu Buchung (Storage-Bucket ist bereits live eingerichtet)
+- ✅ Wiederkehrende Zahlungen werden automatisch verarbeitet: täglich um 03:00 UTC per Datenbank-Job, zusätzlich sofort beim App-Start. Erstellt echte Buchungen, zieht vom Konto ab, verschiebt das nächste Fälligkeitsdatum automatisch weiter.
+- ✅ CSV-Export der Buchungen (Teilen-Icon in der Transaktionsliste)
+- ✅ Suche & Filter in der Transaktionsliste (nach Konto, Kategorie, Text)
+- ✅ Wiederkehrende Einnahmen (z.B. Lohn) — nicht mehr nur Ausgaben
+- ✅ Automatische Kategorie-Vorschläge basierend auf der Buchungsbeschreibung (z.B. "Migros" → Lebensmittel)
+- ✅ Jahresübersicht in Berichten (Umschalter Monat/Jahr oben rechts)
+- ✅ Backup-Export (JSON, alle Daten) — wird vor "Konto löschen" angeboten
+- ✅ Eigene Kategorien verwalten (anlegen, umbenennen, löschen) — über Profil → "Kategorien verwalten"
 - ⚠️ Google/Apple-Login — **Code ist fertig, aber funktioniert erst nach diesem Setup:**
 
 ### Apple Sign-In aktivieren

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, Switch, ScrollView } from 'react-native';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
+import { exportFullBackupJSON } from '../../lib/export';
 
 const BIOMETRIC_KEY = 'finanziq_biometric_enabled';
 
@@ -13,6 +15,7 @@ export default function Profile() {
   const [email, setEmail] = useState('');
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [exportingBackup, setExportingBackup] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? ''));
@@ -45,10 +48,33 @@ export default function Profile() {
     }
   }
 
+  async function handleBackupExport() {
+    setExportingBackup(true);
+    try {
+      await exportFullBackupJSON();
+    } catch (e: any) {
+      Alert.alert('Fehler beim Export', e.message);
+    } finally {
+      setExportingBackup(false);
+    }
+  }
+
   function handleDeleteAccount() {
     Alert.alert(
-      'Konto löschen',
-      'Das löscht dein Konto und ALLE Daten (Konten, Buchungen, Budgets) unwiderruflich. Fortfahren?',
+      'Vor dem Löschen',
+      'Möchtest du zuerst ein Backup deiner Daten exportieren? Das Löschen ist danach endgültig.',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        { text: 'Ohne Backup fortfahren', style: 'destructive', onPress: confirmFinalDelete },
+        { text: 'Erst Backup exportieren', onPress: async () => { await handleBackupExport(); confirmFinalDelete(); } },
+      ]
+    );
+  }
+
+  function confirmFinalDelete() {
+    Alert.alert(
+      'Konto endgültig löschen?',
+      'Das löscht dein Konto und ALLE Daten (Konten, Buchungen, Budgets) unwiderruflich.',
       [
         { text: 'Abbrechen', style: 'cancel' },
         {
@@ -89,6 +115,16 @@ export default function Profile() {
           </View>
         )}
       </View>
+
+      <TouchableOpacity style={[styles.actionRow, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => router.push('/(modals)/categories')}>
+        <Ionicons name="pricetags-outline" size={20} color={colors.text} />
+        <Text style={[styles.actionText, { color: colors.text }]}>Kategorien verwalten</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.actionRow, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={handleBackupExport} disabled={exportingBackup}>
+        <Ionicons name="download-outline" size={20} color={colors.text} />
+        <Text style={[styles.actionText, { color: colors.text }]}>{exportingBackup ? 'Exportiere...' : 'Daten-Backup exportieren'}</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={[styles.actionRow, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={handleResetPassword}>
         <Ionicons name="key-outline" size={20} color={colors.text} />

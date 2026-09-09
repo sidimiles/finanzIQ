@@ -23,10 +23,16 @@ function RootNav() {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
+      if (data.session) {
+        supabase.rpc('process_due_recurring_payments').then(() => {});
+      }
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) {
+        supabase.rpc('process_due_recurring_payments').then(() => {});
+      }
     });
 
     return () => listener.subscription.unsubscribe();

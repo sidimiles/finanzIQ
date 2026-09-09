@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
@@ -16,31 +16,37 @@ function monthRange(offset: number) {
   return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
 }
 
+function yearRange(offset: number) {
+  const year = new Date().getFullYear() - offset;
+  return { start: `${year}-01-01`, end: `${year + 1}-01-01` };
+}
+
 export default function Reports() {
   const { colors } = useTheme();
+  const [viewMode, setViewMode] = useState<'month' | 'year'>('month');
   const [income, setIncome] = useState(0);
   const [expenses, setExpenses] = useState(0);
-  const [lastMonthExpenses, setLastMonthExpenses] = useState(0);
+  const [prevExpenses, setPrevExpenses] = useState(0);
   const [byCategory, setByCategory] = useState<CategorySummary[]>([]);
 
   const load = useCallback(async () => {
-    const thisMonth = monthRange(0);
-    const lastMonth = monthRange(1);
+    const current = viewMode === 'month' ? monthRange(0) : yearRange(0);
+    const previous = viewMode === 'month' ? monthRange(1) : yearRange(1);
 
     const { data: txs } = await supabase
       .from('transactions')
       .select('amount, transaction_date, category:categories(name, color)')
-      .gte('transaction_date', thisMonth.start)
-      .lt('transaction_date', thisMonth.end);
+      .gte('transaction_date', current.start)
+      .lt('transaction_date', current.end);
 
     const { data: prevTxs } = await supabase
       .from('transactions')
       .select('amount')
-      .gte('transaction_date', lastMonth.start)
-      .lt('transaction_date', lastMonth.end)
+      .gte('transaction_date', previous.start)
+      .lt('transaction_date', previous.end)
       .lt('amount', 0);
 
-    setLastMonthExpenses((prevTxs ?? []).reduce((sum, t: any) => sum + Math.abs(Number(t.amount)), 0));
+    setPrevExpenses((prevTxs ?? []).reduce((sum, t: any) => sum + Math.abs(Number(t.amount)), 0));
 
     if (!txs) return;
 
@@ -66,7 +72,7 @@ export default function Reports() {
         .map(([category_name, v]) => ({ category_name, total: v.total, color: v.color }))
         .sort((a, b) => b.total - a.total)
     );
-  }, [colors.accent]);
+  }, [colors.accent, viewMode]);
 
   useFocusEffect(
     useCallback(() => {
@@ -75,13 +81,32 @@ export default function Reports() {
   );
 
   const maxCat = byCategory.length > 0 ? byCategory[0].total : 1;
-  const diff = expenses - lastMonthExpenses;
-  const diffPct = lastMonthExpenses > 0 ? (diff / lastMonthExpenses) * 100 : 0;
+  const diff = expenses - prevExpenses;
+  const diffPct = prevExpenses > 0 ? (diff / prevExpenses) * 100 : 0;
+  const compareLabel = viewMode === 'month' ? 'Vs. letzter Monat' : 'Vs. letztes Jahr';
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
-      <Text style={[styles.header, { color: colors.text }]}>Berichte</Text>
-      <Text style={[styles.subheader, { color: colors.textMuted }]}>Dieser Monat</Text>
+      <View style={styles.headerRow}>
+        <Text style={[styles.header, { color: colors.text }]}>Berichte</Text>
+        <View style={[styles.toggle, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <TouchableOpacity
+            style={[styles.toggleOption, viewMode === 'month' && { backgroundColor: colors.accent }]}
+            onPress={() => setViewMode('month')}
+          >
+            <Text style={[styles.toggleText, { color: viewMode === 'month' ? '#fff' : colors.textMuted }]}>Monat</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.toggleOption, viewMode === 'year' && { backgroundColor: colors.accent }]}
+            onPress={() => setViewMode('year')}
+          >
+            <Text style={[styles.toggleText, { color: viewMode === 'year' ? '#fff' : colors.textMuted }]}>Jahr</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      <Text style={[styles.subheader, { color: colors.textMuted }]}>
+        {viewMode === 'month' ? 'Dieser Monat' : 'Dieses Jahr'}
+      </Text>
 
       <View style={styles.summaryRow}>
         <View style={[styles.summaryCard, { backgroundColor: colors.card, marginRight: 8 }]}>
@@ -94,10 +119,10 @@ export default function Reports() {
         </View>
       </View>
 
-      {lastMonthExpenses > 0 && (
+      {prevExpenses > 0 && (
         <View style={[styles.compareCard, { backgroundColor: colors.card }]}>
           <Text style={[styles.compareText, { color: colors.textMuted }]}>
-            Vs. letzter Monat:{' '}
+            {compareLabel}:{' '}
             <Text style={{ color: diff >= 0 ? colors.expense : colors.income, fontWeight: '700' }}>
               {diff >= 0 ? '+' : ''}
               {diff.toFixed(0)} CHF ({diffPct >= 0 ? '+' : ''}
@@ -111,7 +136,7 @@ export default function Reports() {
       <FlatList
         data={byCategory}
         keyExtractor={(item) => item.category_name}
-        ListEmptyComponent={<Text style={[styles.empty, { color: colors.textMuted }]}>Keine Ausgaben diesen Monat.</Text>}
+        ListEmptyComponent={<Text style={[styles.empty, { color: colors.textMuted }]}>Keine Ausgaben in diesem Zeitraum.</Text>}
         renderItem={({ item }) => (
           <View style={styles.catRow}>
             <View style={styles.catHeaderRow}>
@@ -135,7 +160,11 @@ export default function Reports() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, paddingTop: 60 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   header: { fontSize: 24, fontWeight: '700' },
+  toggle: { flexDirection: 'row', borderRadius: 10, borderWidth: 1, padding: 2 },
+  toggleOption: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: 8 },
+  toggleText: { fontSize: 13, fontWeight: '600' },
   subheader: { fontSize: 14, marginTop: 4, marginBottom: 20 },
   summaryRow: { flexDirection: 'row', marginBottom: 12 },
   summaryCard: { flex: 1, borderRadius: 14, padding: 16 },

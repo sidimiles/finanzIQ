@@ -6,6 +6,8 @@ import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../lib/theme';
 import { RecurringPayment } from '../../types/database';
 
+type RP = RecurringPayment & { type: 'expense' | 'income' };
+
 const frequencyLabel: Record<string, string> = {
   weekly: 'wöchentlich',
   biweekly: 'alle 2 Wochen',
@@ -22,7 +24,7 @@ function daysUntil(dateStr: string) {
 
 export default function Recurring() {
   const { colors } = useTheme();
-  const [payments, setPayments] = useState<RecurringPayment[]>([]);
+  const [payments, setPayments] = useState<RP[]>([]);
 
   const load = useCallback(async () => {
     const { data } = await supabase
@@ -30,7 +32,7 @@ export default function Recurring() {
       .select('*')
       .eq('is_active', true)
       .order('next_due_date', { ascending: true });
-    if (data) setPayments(data as RecurringPayment[]);
+    if (data) setPayments(data as RP[]);
   }, []);
 
   useFocusEffect(
@@ -39,7 +41,7 @@ export default function Recurring() {
     }, [load])
   );
 
-  function confirmDelete(payment: RecurringPayment) {
+  function confirmDelete(payment: RP) {
     Alert.alert('Wiederkehrende Zahlung löschen?', `"${payment.name}" entfernen?`, [
       { text: 'Abbrechen', style: 'cancel' },
       {
@@ -53,18 +55,29 @@ export default function Recurring() {
     ]);
   }
 
-  const monthlyTotal = payments.reduce((sum, p) => {
-    const multiplier =
-      p.frequency === 'weekly' ? 4.33 : p.frequency === 'biweekly' ? 2.17 : p.frequency === 'yearly' ? 1 / 12 : 1;
-    return sum + Math.abs(Number(p.amount)) * multiplier;
-  }, 0);
+  const monthlyExpense = payments
+    .filter((p) => p.type !== 'income')
+    .reduce((sum, p) => {
+      const multiplier =
+        p.frequency === 'weekly' ? 4.33 : p.frequency === 'biweekly' ? 2.17 : p.frequency === 'yearly' ? 1 / 12 : 1;
+      return sum + Math.abs(Number(p.amount)) * multiplier;
+    }, 0);
+  const monthlyIncome = payments
+    .filter((p) => p.type === 'income')
+    .reduce((sum, p) => {
+      const multiplier =
+        p.frequency === 'weekly' ? 4.33 : p.frequency === 'biweekly' ? 2.17 : p.frequency === 'yearly' ? 1 / 12 : 1;
+      return sum + Math.abs(Number(p.amount)) * multiplier;
+    }, 0);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
       <View style={styles.headerRow}>
         <View>
           <Text style={[styles.header, { color: colors.text }]}>Wiederkehrend</Text>
-          <Text style={[styles.subheader, { color: colors.textMuted }]}>~{monthlyTotal.toFixed(0)} CHF / Monat</Text>
+          <Text style={[styles.subheader, { color: colors.textMuted }]}>
+            ~{monthlyExpense.toFixed(0)} CHF Ausgaben · ~{monthlyIncome.toFixed(0)} CHF Einnahmen / Monat
+          </Text>
         </View>
         <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.accent }]} onPress={() => router.push('/(modals)/add-recurring')}>
           <Ionicons name="add" size={22} color="#fff" />
@@ -91,7 +104,10 @@ export default function Recurring() {
                 </Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={[styles.cardAmount, { color: colors.text }]}>{Math.abs(Number(item.amount)).toFixed(0)} CHF</Text>
+                <Text style={[styles.cardAmount, { color: item.type === 'income' ? colors.income : colors.text }]}>
+                  {item.type === 'income' ? '+' : ''}
+                  {Math.abs(Number(item.amount)).toFixed(0)} CHF
+                </Text>
                 {soon && (
                   <Text style={[styles.badge, { color: colors.expense }]}>
                     {days <= 0 ? 'fällig' : `in ${days}T`}

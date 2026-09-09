@@ -18,6 +18,7 @@ export default function ModalsLayout() {
       <Stack.Screen name="add-recurring" options={{ title: 'Wiederkehrende Zahlung' }} />
       <Stack.Screen name="add-transfer" options={{ title: 'Kontoübertrag' }} />
       <Stack.Screen name="add-goal" options={{ title: 'Neues Sparziel' }} />
+      <Stack.Screen name="categories" options={{ title: 'Kategorien verwalten' }} />
       <Stack.Screen name="transactions" options={{ title: 'Alle Buchungen' }} />
     </Stack>
   );
